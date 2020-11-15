@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" class="h-screen w-screen">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaDiff</title>
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://rsms.me/inter/inter.css" />
+
+  <style>
+    html {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-200 h-screen w-screen p-8">
+  <div class="grid grid-cols-3 gap-12 h-full max-w-7xl mx-auto">
+    <div class="bg-white overflow-hidden shadow rounded-lg h-full">
+      <div class="px-4 py-5 sm:p-6 flex flex-col h-full">
+        <p class="text-gray-900 text-xl font-medium">
+          Usuarios del Hashtag
+        </p>
+
+        <textarea id="hashtag" class="mt-4 text-gray-700 resize-none border-2 border-gray-300 rounded-lg w-full flex-1 bg-gray-100 p-4" placeholder="Copia los usuarios del hashtag (Ctrl+A, Ctrl+C, Ctrl+V)..."></textarea>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg h-full">
+      <div class="px-4 py-5 sm:p-6 flex flex-col h-full">
+        <p class="text-gray-900 text-xl font-medium">
+          Usuarios del Post
+        </p>
+
+        <textarea id="post" class="mt-4 text-gray-700 resize-none border-2 border-gray-300 rounded-lg w-full flex-1 bg-gray-100 p-4" placeholder="Copia los usuarios del post (Ctrl+A, Ctrl+C, Ctrl+V)..."></textarea>
+      </div>
+    </div>
+
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+      <div class="px-4 py-5 sm:p-6 flex flex-col h-full">
+        <button id="button" class="bg-blue-600 text-blue-100 w-full rounded-lg py-2 font-medium">Comparar</button>
+
+        <p class="text-gray-900 text-xl font-medium mt-8 flex">
+          <span class="flex-1">Sí han dado Like:</span> <span id="done-percent" class="text-sm text-gray-700"></span>
+        </p>
+        <div id="done" class="mt-4 text-gray-700 border-2 border-gray-300 rounded-lg w-full flex-1 p-4 bg-gray-100 overflow-y-auto"></div>
+
+        <p class="text-gray-900 text-xl font-medium mt-8 flex">
+          <span class="flex-1">No han dado Like:</span> <span id="not-done-percent" class="text-sm text-gray-700"></span>
+        </p>
+        <div id="not-done" class="mt-4 text-gray-700 border-2 border-gray-300 rounded-lg w-full flex-1 p-4 bg-gray-100 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.20/lodash.min.js"></script>
+
+  <script type="text/javascript">
+    button.addEventListener('click', () => {
+      const hashtagUsers = extractNamesFromValue(document.querySelector('#hashtag').value)
+      const postUsers = extractNamesFromValue(document.querySelector('#post').value)
+
+      const doneContainer = document.querySelector('#done')
+      const donePercent = document.querySelector('#done-percent')
+      const notDoneContainer = document.querySelector('#not-done')
+      const notDonePercent = document.querySelector('#not-done-percent')
+
+      doneContainer.innerHTML = ''
+      donePercent.innerHTML = ''
+      notDoneContainer.innerHTML = ''
+      notDonePercent.innerHTML = ''
+
+      const notDoneUsers = _.difference(hashtagUsers, postUsers)
+      const doneUsers = _.difference(hashtagUsers, notDoneUsers)
+
+      const donePercentValue = Math.round(doneUsers.length / hashtagUsers.length * 100)
+      const notDonePercentValue = Math.round(notDoneUsers.length / hashtagUsers.length * 100)
+
+      donePercent.innerText = `${doneUsers.length}/${hashtagUsers.length} (${donePercentValue}%)`
+      notDonePercent.innerText = `${notDoneUsers.length}/${hashtagUsers.length} (${notDonePercentValue}%)`
+
+      notDoneUsers.forEach((user) => {
+        const div = document.createElement('div')
+        div.innerText = user
+
+        notDoneContainer.appendChild(div)
+      })
+
+      doneUsers.forEach((user) => {
+        const div = document.createElement('div')
+        div.innerText = user
+
+        doneContainer.appendChild(div)
+      })
+    })
+
+    function extractNamesFromValue (value) {
+      return value.split("\n").reduce((names, line) => {
+        if (line.includes('Foto del perfil')) {
+          names.push(line.replace('Foto del perfil de ', ''))
+        }
+
+        return names
+      }, []).sort()
+    }
+  </script>
+</body>
+</html>
